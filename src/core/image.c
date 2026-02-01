@@ -30,7 +30,7 @@ VkImageView *magmatis_image_view_create(VkDevice device, VkImage *images,
     if (vkCreateImageView(device, &image_view_create_info, NULL,
                           &swapchain_image_views[i]) != VK_SUCCESS) {
       fprintf(stderr, "%sFailed to create image view%s\n", RED, CLEAR);
-      exit(EXIT_FAILURE);
+      return NULL;
     }
   }
 
