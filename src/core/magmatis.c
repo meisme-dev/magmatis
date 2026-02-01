@@ -83,7 +83,7 @@ Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
                        &image_count, &format, &extent);
 
   VkImageView *image_views =
-      magmatis_image_view_create(device, images, format, image_count);
+      image_view_create(device, images, format, image_count);
 
   program->window = window;
   program->instance = instance;
