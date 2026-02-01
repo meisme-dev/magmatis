@@ -1,83 +1,102 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <vulkan/vulkan.h>
 
-#include "../program_info.h"
-#include "../extra/colors.h"
+#include "device.h"
+#include "image.h"
+#include "instance.h"
 #include "magmatis.h"
+#include "swapchain.h"
+#include "vulkan/vulkan_core.h"
+#include <core/window.h>
+#include <extra/colors.h>
+#include <program_info.h>
 
-static int _program__cleanup(struct Magmatis *self) {
-    glfwDestroyWindow(self->window);
-    glfwTerminate();
-    free(self);
-    return EXIT_SUCCESS;
+int magmatis_program_cleanup(struct Magmatis *program) {
+  vkDeviceWaitIdle(program->device);
+  for (uint32_t i = 0; i < program->image_count; i++) {
+    vkDestroyImageView(program->device, program->image_views[i], NULL);
+  }
+  vkDestroySwapchainKHR(program->device, program->swapchain, NULL);
+  vkDestroyDevice(program->device, NULL);
+  vkDestroySurfaceKHR(program->instance, program->surface, NULL);
+  vkDestroyInstance(program->instance, NULL);
+  glfwDestroyWindow(program->window);
+  glfwTerminate();
+  free(program);
+  return EXIT_SUCCESS;
 }
 
-Magmatis *_program__new(unsigned int w, unsigned int h, char *title) {
-    Magmatis *magmatis = (Magmatis *)malloc(sizeof(Magmatis));
+Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
+                               int enable_validation) {
+  Magmatis *program = (Magmatis *)malloc(sizeof(Magmatis));
 
-    if(magmatis == NULL) {
-        fprintf(stderr, "Memory allocation failure");
-        exit(EXIT_FAILURE);
-    }
+  int hints[] = {GLFW_CLIENT_API, GLFW_RESIZABLE};
+  int values[] = {GLFW_NO_API, GLFW_FALSE};
 
-    if(!glfwInit()) {
-        perror("Failed to initialize glfw");
-        exit(EXIT_FAILURE);
-    }
+  GLFWwindow *window =
+      window_glfw_new(w, h, title, hints, values, sizeof(hints) / sizeof(int));
 
-    GLFWwindow *window = glfwCreateWindow(w, h, title, NULL, NULL);
+  if (program == NULL) {
+    fprintf(stderr, "%sMemory allocation failure%s", RED, CLEAR);
+    return NULL;
+  }
 
-    if(!window) {
-        perror("Failed to create window");
-        exit(EXIT_FAILURE);
-    }
+  uint32_t layers_count = 0;
+  uint32_t extensions_count = 1;
 
-    char debug_utils_extension[] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-    int *instance_extensions[] = {
-       (int*) &debug_utils_extension
-    };
+  const char *layers[] = {NULL};
+  const char *extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-    VkApplicationInfo application_info;
-    memset(&application_info, 0, sizeof(application_info));
-    application_info.pApplicationName = PROGRAM_NAME;
-    application_info.applicationVersion = VK_MAKE_API_VERSION(V_VARIANT, V_MAJOR, V_MINOR, V_PATCH);
-    application_info.pEngineName = ENGINE_NAME;
-    application_info.engineVersion = VK_MAKE_API_VERSION(V_VARIANT, V_MAJOR, V_MINOR, V_PATCH);
-    application_info.apiVersion = VK_MAKE_API_VERSION(0, 1, 3, 2);
+  if (enable_validation) {
+    layers[0] = "VK_LAYER_KHRONOS_validation";
+    layers_count++;
+  }
 
-    uint32_t layer_prop_count = 0;
-    vkEnumerateInstanceLayerProperties(&layer_prop_count, NULL);
+  VkInstance instance =
+      instance_create(layers, layers_count, PROGRAM_NAME, ENGINE_NAME,
+                      VK_MAKE_API_VERSION(V_VARIANT, V_MAJOR, V_MINOR, V_PATCH),
+                      VK_MAKE_API_VERSION(V_VARIANT, V_MAJOR, V_MINOR, V_PATCH),
+                      VK_API_VERSION_1_3);
 
-    VkLayerProperties layer_properties[layer_prop_count];
-    vkEnumerateInstanceLayerProperties(&layer_prop_count, layer_properties);
+  VkSurfaceKHR surface = window_glfw_surface_create(instance, window);
 
-    printf("%sAvailabe layers:\n", B_GREEN);
-    for(uint32_t i = 0; i < layer_prop_count - 1; i++) {
-        printf("%s├── %s%s\n", GREEN, CYAN, layer_properties[i].layerName);
-    }
-    printf("%s└── %s%s\n\n", GREEN, CYAN, layer_properties[layer_prop_count - 1].layerName);
+  QueueFamilies queue_families;
 
-    uint32_t required_extension_count = 0;
-    const char **required_extensions;
+  VkPhysicalDevice physical_device =
+      device_select(surface, instance, extensions, extensions_count);
 
-    required_extensions = glfwGetRequiredInstanceExtensions(&required_extension_count);
+  VkDevice device = device_create(surface, physical_device, &queue_families,
+                                  extensions, extensions_count);
 
-    VkInstanceCreateInfo instance_create_info;
-    memset(&instance_create_info, 0, sizeof(instance_create_info));
-    instance_create_info.pApplicationInfo = &application_info;
-    instance_create_info.ppEnabledExtensionNames = required_extensions;
-    instance_create_info.enabledExtensionCount = required_extension_count;
+  VkQueue present_queue = queue_get(device, queue_families.present_family);
+  VkQueue graphics_queue = queue_get(device, queue_families.graphics_family);
 
-    VkInstance instance;
-    if(vkCreateInstance(&instance_create_info, NULL, &instance) != VK_SUCCESS) {
-        fprintf(stderr, "%sFailed to create instance%s", RED, CLEAR);
-        exit(EXIT_FAILURE);
-    };
+  VkImage *images = NULL;
+  uint32_t image_count = 0;
+  VkFormat format = VK_FORMAT_UNDEFINED;
+  VkExtent2D extent = {0, 0};
 
+  VkSwapchainKHR swapchain =
+      swapchain_create(physical_device, device, surface, w, h, &images,
+                       &image_count, &format, &extent);
 
-    magmatis->window = window;
-    magmatis->cleanup = _program__cleanup;
-    return magmatis;
+  VkImageView *image_views =
+      magmatis_image_view_create(device, images, format, image_count);
+
+  program->window = window;
+  program->instance = instance;
+  program->device = device;
+  program->surface = surface;
+  program->queue_families = queue_families;
+  program->present_queue = present_queue;
+  program->graphics_queue = graphics_queue;
+  program->swapchain = swapchain;
+  program->format = format;
+  program->extent = extent;
+  program->image_views = image_views;
+  program->image_count = image_count;
+
+  return program;
 }

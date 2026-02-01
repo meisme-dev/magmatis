@@ -1,5 +1,2 @@
-bin/
-obj/
-Makefile
-*.make
-vgcore.*
+result/
+.direnv/

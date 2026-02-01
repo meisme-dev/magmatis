@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.rs": "rust",
-        "program_info.h": "c",
-        "glfw3.h": "c",
-        "magmatis.h": "c"
-    }
-}
