@@ -39,7 +39,7 @@ Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
       window_glfw_new(w, h, title, hints, values, sizeof(hints) / sizeof(int));
 
   if (program == NULL) {
-    fprintf(stderr, "%sMemory allocation failure%s", RED, CLEAR);
+    fprintf(stderr, "%sMemory allocation failure%s\n", RED, CLEAR);
     return NULL;
   }
 

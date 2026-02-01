@@ -72,7 +72,7 @@ VkInstance magmatis_instance_create(const char *const *layers,
 
   VkInstance instance;
   if (vkCreateInstance(&instance_create_info, NULL, &instance) != VK_SUCCESS) {
-    fprintf(stderr, "%sFailed to create instance%s", RED, CLEAR);
+    fprintf(stderr, "%sFailed to create instance%s\n", RED, CLEAR);
     return NULL;
   };
 

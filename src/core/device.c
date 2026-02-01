@@ -152,7 +152,7 @@ VkDevice magmatis_device_create(VkSurfaceKHR surface,
 
   if (vkCreateDevice(physical_device, &device_create_info, NULL, &device) !=
       VK_SUCCESS) {
-    fprintf(stderr, "%sFailed to create device%s", RED, CLEAR);
+    fprintf(stderr, "%sFailed to create device%s\n", RED, CLEAR);
     return NULL;
   }
 

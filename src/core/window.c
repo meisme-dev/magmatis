@@ -43,7 +43,7 @@ VkSurfaceKHR magmatis_window_glfw_surface_create(VkInstance instance,
   VkSurfaceKHR surface;
 
   if (glfwCreateWindowSurface(instance, window, NULL, &surface) != VK_SUCCESS) {
-    fprintf(stderr, "%sFailed to create window surface%s\b", RED, CLEAR);
+    fprintf(stderr, "%sFailed to create window surface%s\n", RED, CLEAR);
     return NULL;
   }
 
