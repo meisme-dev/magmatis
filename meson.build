@@ -37,6 +37,8 @@ foreach shader : shaders
     input: 'res/' + shader,
     output: spv_shader,
     command: [glslc, '@INPUT@', '-o', '@OUTPUT@'],
+    install: true,
+    install_dir: get_option('bindir'),
   )
 endforeach
 
