@@ -11,19 +11,26 @@ glfw_dep = dependency('glfw3', required: true)
 vulkan_dep = dependency('vulkan', required: true)
 
 sources = files(
+  'lib/whereami.c',
   'src/common/list.c',
+  'src/core/command.c',
   'src/core/device.c',
+  'src/core/event.c',
+  'src/core/framebuffer.c',
   'src/core/image.c',
   'src/core/instance.c',
   'src/core/magmatis.c',
   'src/core/pipeline.c',
   'src/core/queue.c',
+  'src/core/render.c',
   'src/core/swapchain.c',
+  'src/core/sync.c',
   'src/core/window.c',
+  'src/io/file.c',
   'src/main.c',
 )
 
-include_directories = include_directories('src')
+include_directories = include_directories('src', 'lib')
 
 glslc = find_program('glslc')
 

@@ -1,5 +1,6 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
+#include "magmatis.h"
 #include <GLFW/glfw3.h>
 #include <stdbool.h>
 
@@ -8,7 +9,8 @@ GLFWwindow *magmatis_window_glfw_new(int w, int h, char *title, int *hints,
 
 const char **magmatis_window_extensions_get(uint32_t *required_extension_count);
 
-bool magmatis_window_glfw_event_loop_run(GLFWwindow *window);
+int magmatis_window_glfw_event_loop_run(Magmatis *program,
+                                        int (*fun)(Magmatis *));
 
 VkSurfaceKHR magmatis_window_glfw_surface_create(VkInstance instance,
                                                  GLFWwindow *window);

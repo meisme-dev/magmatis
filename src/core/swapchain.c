@@ -65,8 +65,7 @@ SwapchainInfo *magmatis_swapchain_info_query(VkPhysicalDevice device,
 }
 
 static VkSurfaceFormatKHR
-magmatis_swapchain_format_choose(const VkSurfaceFormatKHR *formats,
-                                 uint32_t count) {
+swapchain_format_choose(const VkSurfaceFormatKHR *formats, uint32_t count) {
   for (uint32_t i = 0; i < count; i++) {
     if (formats[i].format == VK_FORMAT_B8G8R8A8_SRGB &&
         formats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -78,8 +77,8 @@ magmatis_swapchain_format_choose(const VkSurfaceFormatKHR *formats,
 }
 
 static VkPresentModeKHR
-magmatis_swapchain_present_mode_choose(const VkPresentModeKHR *present_modes,
-                                       uint32_t count) {
+swapchain_present_mode_choose(const VkPresentModeKHR *present_modes,
+                              uint32_t count) {
   for (uint32_t i = 0; i < count; i++) {
     if (present_modes[i] == VK_PRESENT_MODE_MAILBOX_KHR) {
       return present_modes[i];
@@ -89,9 +88,8 @@ magmatis_swapchain_present_mode_choose(const VkPresentModeKHR *present_modes,
   return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-static VkExtent2D
-magmatis_swapchain_extent_choose(VkSurfaceCapabilitiesKHR capabilities,
-                                 uint32_t width, uint32_t height) {
+static VkExtent2D swapchain_extent_choose(VkSurfaceCapabilitiesKHR capabilities,
+                                          uint32_t width, uint32_t height) {
   if (capabilities.currentExtent.width != UINT32_MAX) {
     return capabilities.currentExtent;
   }
@@ -117,13 +115,13 @@ VkSwapchainKHR magmatis_swapchain_create(VkPhysicalDevice physical_device,
                                          VkFormat *format, VkExtent2D *extent) {
   SwapchainInfo *info = swapchain_info_query(physical_device, surface);
   VkSurfaceFormatKHR surface_format =
-      magmatis_swapchain_format_choose(info->formats, info->formats_count);
+      swapchain_format_choose(info->formats, info->formats_count);
 
-  VkPresentModeKHR present_mode = magmatis_swapchain_present_mode_choose(
+  VkPresentModeKHR present_mode = swapchain_present_mode_choose(
       info->present_modes, info->present_modes_count);
 
   VkExtent2D chosen_extent =
-      magmatis_swapchain_extent_choose(info->capabilities, width, height);
+      swapchain_extent_choose(info->capabilities, width, height);
 
   VkSwapchainCreateInfoKHR create_info = {
       .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,

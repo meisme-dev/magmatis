@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool magmatis_device_extensions_check(VkPhysicalDevice device,
-                                             const char *extension) {
+static bool device_extensions_check(VkPhysicalDevice device,
+                                    const char *extension) {
   uint32_t extension_count = 0;
   vkEnumerateDeviceExtensionProperties(device, NULL, &extension_count, NULL);
 
@@ -69,7 +69,7 @@ VkPhysicalDevice magmatis_device_select(VkSurfaceKHR surface,
       highest_priority = current_priority;
 
       for (uint32_t j = 0; j < extensions_count; j++) {
-        if (!magmatis_device_extensions_check(devices[i], extensions[j])) {
+        if (!device_extensions_check(devices[i], extensions[j])) {
           printf("Device %s does not support extension %s\n",
                  properties.deviceName, extensions[j]);
           break;

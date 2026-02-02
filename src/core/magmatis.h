@@ -2,12 +2,13 @@
 
 #include "vulkan/vulkan_core.h"
 #define GLFW_INCLUDE_VULKAN
+#include "pipeline.h"
 #include "queue.h"
 #include <GLFW/glfw3.h>
 
-typedef struct Magmatis Magmatis;
+#define MAX_FRAMES_IN_FLIGHT 2
 
-struct Magmatis {
+typedef struct Magmatis {
   GLFWwindow *window;
   VkInstance instance;
   VkSurfaceKHR surface;
@@ -21,7 +22,19 @@ struct Magmatis {
   VkFormat format;
   VkExtent2D extent;
   VkImageView *image_views;
-};
+  VkPipelineLayout pipeline_layout;
+  VkRenderPass render_pass;
+  PipelineInfo *pipeline_info;
+  VkPipeline pipeline;
+  VkFramebuffer *framebuffers;
+  VkSemaphore *image_semaphores;
+  VkSemaphore *render_semaphores;
+  VkFence *in_flight_fences;
+  VkCommandBuffer *command_buffers;
+  VkCommandPool command_pool;
+  uint32_t image_index;
+  uint32_t current_frame;
+} Magmatis;
 
 Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
                                int enable_validation);

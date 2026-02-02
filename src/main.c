@@ -1,4 +1,5 @@
 #include "program_info.h"
+#include <core/event.h>
 #include <core/magmatis.h>
 #include <core/window.h>
 #include <signal.h>
@@ -27,6 +28,7 @@ int main(int argc, char *argv[]) {
   command_line_process(argc, argv);
 
   program = program_new(DEFAULT_W, DEFAULT_H, PROGRAM_NAME, enable_validation);
-  window_glfw_event_loop_run(program->window);
+  window_glfw_event_loop_run(program, event_loop_run);
+
   return program_cleanup(program);
 }

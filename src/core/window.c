@@ -4,14 +4,13 @@
 #include <stdlib.h>
 #include <vulkan/vulkan.h>
 
-static void magmatis_window_glfw_error_callback(int error,
-                                                const char *description) {
+static void window_glfw_error_callback(int error, const char *description) {
   fprintf(stderr, "GLFW Error: %s, code: %d\n", description, error);
 }
 
 GLFWwindow *magmatis_window_glfw_new(int w, int h, char *title, int *hints,
                                      int *values, int hint_count) {
-  glfwSetErrorCallback(magmatis_window_glfw_error_callback);
+  glfwSetErrorCallback(window_glfw_error_callback);
 
   if (!glfwInit()) {
     fprintf(stderr, "%sFailed to initialize glfw%s\n", RED, CLEAR);
@@ -31,9 +30,11 @@ magmatis_window_extensions_get(uint32_t *required_extension_count) {
   return glfwGetRequiredInstanceExtensions(required_extension_count);
 }
 
-bool magmatis_window_glfw_event_loop_run(GLFWwindow *window) {
-  while (!glfwWindowShouldClose(window)) {
+int magmatis_window_glfw_event_loop_run(Magmatis *program,
+                                        int (*fun)(Magmatis *)) {
+  while (!glfwWindowShouldClose(program->window)) {
     glfwPollEvents();
+    fun(program);
   }
   return true;
 }
