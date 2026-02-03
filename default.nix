@@ -8,6 +8,9 @@
 , ninja
 , shaderc
 , glfw
+, moltenvk
+, stdenv
+, makeWrapper
 }:
 
 llvmPackages_20.stdenv.mkDerivation {
@@ -16,18 +19,25 @@ llvmPackages_20.stdenv.mkDerivation {
 
   src = ./.;
 
-  nativeBuildInputs = [ pkg-config meson ninja shaderc ];
-  buildInputs = [ vulkan-headers vulkan-loader vulkan-validation-layers glfw ];
+  nativeBuildInputs = [ pkg-config meson ninja shaderc makeWrapper ];
+  buildInputs = [ vulkan-headers vulkan-loader vulkan-validation-layers glfw ] ++ lib.optionals stdenv.isDarwin [ moltenvk moltenvk.dev ];
 
   postBuild = ''
     mkdir -p $out/
     cp compile_commands.json $out/compile_commands.json
   '';
 
+  postInstall = lib.optionalString stdenv.isDarwin ''
+      wrapProgram $out/bin/magmatis \
+        --prefix DYLD_LIBRARY_PATH : "${vulkan-loader}/lib" \
+        --set VK_LAYER_PATH ${vulkan-validation-layers}/share/vulkan/explicit_layer.d \
+        --set VK_ICD_FILENAMES ${moltenvk}/share/vulkan/icd.d/MoltenVK_icd.json
+    '';
+
   meta = with lib; {
     homepage = "";
     description = ''
     '';
-    platforms = with platforms; linux;
+    platforms = with platforms; all;
   };
 }

@@ -56,9 +56,12 @@ VkInstance magmatis_instance_create(const char *const *layers,
   layer_count = layers_count;
 
   uint32_t required_extension_count = 0;
-  const char **required_extensions;
 
-  required_extensions = window_extensions_get(&required_extension_count);
+  const char **tmp = window_extensions_get(&required_extension_count);
+  const char **required_extensions = calloc(required_extension_count + 1, sizeof(char*));
+
+  memcpy(required_extensions, tmp, required_extension_count * sizeof(char*));
+  required_extensions[required_extension_count++] = "VK_KHR_portability_enumeration";
 
   VkInstanceCreateInfo instance_create_info;
   memset(&instance_create_info, 0, sizeof(instance_create_info));
@@ -69,10 +72,12 @@ VkInstance magmatis_instance_create(const char *const *layers,
   instance_create_info.enabledExtensionCount = required_extension_count;
   instance_create_info.enabledLayerCount = layer_count;
   instance_create_info.ppEnabledLayerNames = layers;
+  instance_create_info.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
   VkInstance instance;
-  if (vkCreateInstance(&instance_create_info, NULL, &instance) != VK_SUCCESS) {
-    fprintf(stderr, "%sFailed to create instance%s\n", RED, CLEAR);
+  VkResult result = vkCreateInstance(&instance_create_info, NULL, &instance);
+  if (result != VK_SUCCESS) {
+    fprintf(stderr, "%sFailed to create instance%s %u\n", RED, CLEAR, result);
     return NULL;
   };
 

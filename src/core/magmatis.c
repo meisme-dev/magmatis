@@ -16,7 +16,6 @@
 #include <core/window.h>
 #include <extra/colors.h>
 #include <program_info.h>
-#include <string.h>
 
 int magmatis_program_cleanup(struct Magmatis *program) {
   vkDeviceWaitIdle(program->device);
