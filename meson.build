@@ -1,6 +1,7 @@
 project(
   'magmatis',
   'c',
+  'cpp',
   version: '0.0.1',
   default_options: [
     'warning_level=2',
@@ -9,6 +10,14 @@ project(
 
 glfw_dep = dependency('glfw3', required: true)
 vulkan_dep = dependency('vulkan', required: true)
+cglm_dep = dependency('cglm', required: true)
+
+vma_dep = dependency(
+  'VulkanMemoryAllocator',
+  method: 'cmake',
+  modules: ['GPUOpen::VulkanMemoryAllocator'],
+  required: true,
+)
 
 sources = files(
   'lib/whereami.c',
@@ -20,11 +29,14 @@ sources = files(
   'src/core/image.c',
   'src/core/instance.c',
   'src/core/magmatis.c',
+  'src/core/memory.c',
   'src/core/pipeline.c',
   'src/core/queue.c',
   'src/core/render.c',
   'src/core/swapchain.c',
   'src/core/sync.c',
+  'src/core/vertex.c',
+  'src/core/vma.cpp',
   'src/core/window.c',
   'src/io/file.c',
   'src/main.c',
@@ -49,7 +61,7 @@ foreach shader : shaders
   )
 endforeach
 
-dependencies = [glfw_dep, vulkan_dep]
+dependencies = [glfw_dep, vulkan_dep, cglm_dep, vma_dep]
 
 executable(
   'magmatis',

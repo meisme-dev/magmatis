@@ -5,8 +5,8 @@
 
 void magmatis_render(VkRenderPass render_pass, VkCommandBuffer command_buffer,
                      VkFramebuffer framebuffer, VkExtent2D extent,
-                     VkPipeline pipeline, VkViewport viewport,
-                     VkRect2D scissor) {
+                     VkPipeline pipeline, VkViewport viewport, VkRect2D scissor,
+                     VkBuffer vertex_buffer, uint32_t vertex_count) {
 
   VkClearValue clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 
@@ -27,9 +27,14 @@ void magmatis_render(VkRenderPass render_pass, VkCommandBuffer command_buffer,
 
   vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
+  VkBuffer vertex_buffers[1] = {vertex_buffer};
+  VkDeviceSize offsets[1] = {0};
+
+  vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
   vkCmdSetViewport(command_buffer, 0, 1, &viewport);
   vkCmdSetScissor(command_buffer, 0, 1, &scissor);
-  vkCmdDraw(command_buffer, 3, 1, 0, 0);
+  vkCmdDraw(command_buffer, vertex_count, 1, 0, 0);
 
   vkCmdEndRenderPass(command_buffer);
 }

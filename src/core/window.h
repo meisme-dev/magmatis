@@ -5,7 +5,9 @@
 #include <stdbool.h>
 
 GLFWwindow *magmatis_window_glfw_new(int w, int h, char *title, int *hints,
-                                     int *values, int hint_count);
+                                     int *values, int hint_count,
+                                     void *user_pointer,
+                                     GLFWframebuffersizefun resize_callback);
 
 const char **magmatis_window_extensions_get(uint32_t *required_extension_count);
 

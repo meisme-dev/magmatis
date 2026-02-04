@@ -1,4 +1,5 @@
 #include "framebuffer.h"
+#include "magmatis.h"
 #include "vulkan/vulkan_core.h"
 #include <stdlib.h>
 
@@ -36,4 +37,12 @@ VkFramebuffer *magmatis_framebuffer_new(VkDevice device,
   }
 
   return framebuffer;
+}
+
+void magmatis_framebuffer_resize_callback(GLFWwindow *window, int width,
+                                          int height) {
+  Magmatis *program = glfwGetWindowUserPointer(window);
+  program->framebuffer_resized = true;
+  program->width = width;
+  program->height = height;
 }

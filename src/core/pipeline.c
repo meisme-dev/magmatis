@@ -1,5 +1,6 @@
 #include "pipeline.h"
 #include "io/file.h"
+#include "vertex.h"
 #include "vulkan/vulkan_core.h"
 
 #include <extra/colors.h>
@@ -136,14 +137,22 @@ VkPipelineLayout magmatis_pipeline_layout_create(VkDevice device,
   pipeline_info->dynamic_state->dynamicStateCount = 2;
   pipeline_info->dynamic_state->pDynamicStates = dynamic_states;
 
+  VkVertexInputBindingDescription *vertex_input_binding_description =
+      vertex_binding_description_get();
+
+  VkVertexInputAttributeDescription *vertex_input_attribute_description =
+      vertex_attribute_description_get();
+
   pipeline_info->vertex_input_state =
       calloc(1, sizeof(VkPipelineVertexInputStateCreateInfo));
   pipeline_info->vertex_input_state->sType =
       VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  pipeline_info->vertex_input_state->vertexBindingDescriptionCount = 0;
-  pipeline_info->vertex_input_state->pVertexBindingDescriptions = NULL;
-  pipeline_info->vertex_input_state->vertexAttributeDescriptionCount = 0;
-  pipeline_info->vertex_input_state->pVertexAttributeDescriptions = NULL;
+  pipeline_info->vertex_input_state->vertexBindingDescriptionCount = 1;
+  pipeline_info->vertex_input_state->pVertexBindingDescriptions =
+      vertex_input_binding_description;
+  pipeline_info->vertex_input_state->vertexAttributeDescriptionCount = 2;
+  pipeline_info->vertex_input_state->pVertexAttributeDescriptions =
+      vertex_input_attribute_description;
 
   pipeline_info->input_assembly_state =
       calloc(1, sizeof(VkPipelineInputAssemblyStateCreateInfo));

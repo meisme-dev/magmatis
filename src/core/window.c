@@ -1,7 +1,6 @@
 #include "window.h"
 #include <extra/colors.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <vulkan/vulkan.h>
 
 static void window_glfw_error_callback(int error, const char *description) {
@@ -9,7 +8,9 @@ static void window_glfw_error_callback(int error, const char *description) {
 }
 
 GLFWwindow *magmatis_window_glfw_new(int w, int h, char *title, int *hints,
-                                     int *values, int hint_count) {
+                                     int *values, int hint_count,
+                                     void *user_pointer,
+                                     GLFWframebuffersizefun resize_callback) {
   glfwSetErrorCallback(window_glfw_error_callback);
 
   if (!glfwInit()) {
@@ -22,6 +23,9 @@ GLFWwindow *magmatis_window_glfw_new(int w, int h, char *title, int *hints,
   }
 
   GLFWwindow *window = glfwCreateWindow(w, h, title, NULL, NULL);
+  glfwSetWindowUserPointer(window, user_pointer);
+  glfwSetFramebufferSizeCallback(window, resize_callback);
+
   return window;
 }
 

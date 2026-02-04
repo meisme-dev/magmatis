@@ -1,4 +1,6 @@
 #include "swapchain.h"
+#include "framebuffer.h"
+#include "image.h"
 #include "vulkan/vulkan_core.h"
 #include <extra/colors.h>
 #include <stdint.h>
@@ -157,6 +159,34 @@ VkSwapchainKHR magmatis_swapchain_create(VkPhysicalDevice physical_device,
   *extent = chosen_extent;
 
   return swapchain;
+}
+
+void magmatis_swapchain_recreate(VkSwapchainKHR *swapchain,
+                                 VkPhysicalDevice physical_device,
+                                 VkDevice device, VkFramebuffer **framebuffers,
+                                 VkImageView **image_views,
+                                 VkSurfaceKHR surface, VkRenderPass render_pass,
+                                 uint32_t width, uint32_t height,
+                                 VkImage **images, uint32_t *image_count,
+                                 VkFormat *format, VkExtent2D *extent) {
+  vkDeviceWaitIdle(device);
+
+  for (uint32_t i = 0; i < *image_count; i++) {
+    vkDestroyFramebuffer(device, (*framebuffers)[i], NULL);
+    vkDestroyImageView(device, (*image_views)[i], NULL);
+  }
+
+  vkDestroySwapchainKHR(device, *swapchain, NULL);
+
+  *swapchain =
+      magmatis_swapchain_create(physical_device, device, surface, width, height,
+                                images, image_count, format, extent);
+
+  *image_views =
+      magmatis_image_view_create(device, *images, *format, *image_count);
+
+  *framebuffers = magmatis_framebuffer_new(device, render_pass, *extent,
+                                           *image_views, *image_count);
 }
 
 #undef CLAMP

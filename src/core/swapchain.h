@@ -20,7 +20,17 @@ VkSwapchainKHR magmatis_swapchain_create(VkPhysicalDevice physical_device,
                                          uint32_t *image_count,
                                          VkFormat *format, VkExtent2D *extent);
 
+void magmatis_swapchain_recreate(VkSwapchainKHR *swapchain,
+                                 VkPhysicalDevice physical_device,
+                                 VkDevice device, VkFramebuffer **framebuffers,
+                                 VkImageView **image_views,
+                                 VkSurfaceKHR surface, VkRenderPass render_pass,
+                                 uint32_t width, uint32_t height,
+                                 VkImage **images, uint32_t *image_count,
+                                 VkFormat *format, VkExtent2D *extent);
+
 #ifndef USE_LONG_NAMES
 #define swapchain_info_query magmatis_swapchain_info_query
 #define swapchain_create magmatis_swapchain_create
+#define swapchain_recreate magmatis_swapchain_recreate
 #endif

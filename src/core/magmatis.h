@@ -1,10 +1,13 @@
 #pragma once
 
-#include "vulkan/vulkan_core.h"
-#define GLFW_INCLUDE_VULKAN
 #include "pipeline.h"
 #include "queue.h"
+#include "vertex.h"
+#include "vulkan/vulkan_core.h"
+
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vk_mem_alloc.h>
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
@@ -15,6 +18,7 @@ typedef struct Magmatis {
   QueueFamilies queue_families;
   VkQueue present_queue;
   VkQueue graphics_queue;
+  VkPhysicalDevice physical_device;
   VkDevice device;
   VkSwapchainKHR swapchain;
   VkImage *images;
@@ -34,6 +38,13 @@ typedef struct Magmatis {
   VkCommandPool command_pool;
   uint32_t image_index;
   uint32_t current_frame;
+  uint32_t width;
+  uint32_t height;
+  uint8_t framebuffer_resized;
+  VmaAllocator vma_allocator;
+  VkBuffer vertex_buffer;
+  uint32_t vertex_count;
+  VmaAllocation vertex_allocation;
 } Magmatis;
 
 Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,

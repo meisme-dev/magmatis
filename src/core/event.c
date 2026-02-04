@@ -1,6 +1,7 @@
 #include "event.h"
 #include "command.h"
 #include "render.h"
+#include "swapchain.h"
 #include <extra/colors.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,12 +10,14 @@ int magmatis_event_loop_run(Magmatis *program) {
   vkWaitForFences(program->device, 1,
                   &program->in_flight_fences[program->current_frame], VK_TRUE,
                   -1);
+
+  VkResult result =
+      vkAcquireNextImageKHR(program->device, program->swapchain, UINT64_MAX,
+                            program->image_semaphores[program->current_frame],
+                            VK_NULL_HANDLE, &program->image_index);
+
   vkResetFences(program->device, 1,
                 &program->in_flight_fences[program->current_frame]);
-
-  vkAcquireNextImageKHR(program->device, program->swapchain, UINT64_MAX,
-                        program->image_semaphores[program->current_frame],
-                        VK_NULL_HANDLE, &program->image_index);
 
   VkSubmitInfo submit_info;
   memset(&submit_info, 0, sizeof(submit_info));
@@ -44,7 +47,8 @@ int magmatis_event_loop_run(Magmatis *program) {
   render(program->render_pass, program->command_buffers[program->current_frame],
          program->framebuffers[program->image_index], program->extent,
          program->pipeline, *program->pipeline_info->viewport_state->pViewports,
-         *program->pipeline_info->viewport_state->pScissors);
+         *program->pipeline_info->viewport_state->pScissors,
+         program->vertex_buffer, program->vertex_count);
 
   command_buffer_end(program->command_buffers[program->current_frame]);
 
@@ -71,6 +75,19 @@ int magmatis_event_loop_run(Magmatis *program) {
 
   if (vkQueuePresentKHR(program->present_queue, &present_info) != VK_SUCCESS) {
     fprintf(stderr, "%sFailed to present image%s\n", RED, CLEAR);
+    return -1;
+  }
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || program->framebuffer_resized) {
+    program->framebuffer_resized = false;
+    magmatis_swapchain_recreate(
+        &program->swapchain, program->physical_device, program->device,
+        &program->framebuffers, &program->image_views, program->surface,
+        program->render_pass, program->width, program->height, &program->images,
+        &program->image_count, &program->format, &program->extent);
+    return 0;
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    fprintf(stderr, "Failed to acquire next image\n");
     return -1;
   }
 
