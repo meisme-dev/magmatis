@@ -17,9 +17,11 @@ typedef struct PipelineInfo {
 VkShaderModule magmatis_shader_module_create(VkDevice device, char *code,
                                              size_t code_size);
 
-VkPipelineLayout magmatis_pipeline_layout_create(VkDevice device,
-                                                 VkExtent2D extent,
-                                                 PipelineInfo *pipeline_info);
+VkPipelineLayout
+magmatis_pipeline_layout_create(VkDevice device, VkExtent2D extent,
+                                PipelineInfo *pipeline_info,
+                                VkDescriptorSetLayout descriptor_set_layouts,
+                                uint32_t descriptor_set_layouts_count);
 
 VkRenderPass magmatis_render_pass_create(VkDevice device, VkFormat format);
 

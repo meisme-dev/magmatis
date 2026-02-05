@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "vertex.h"
 #include "vulkan/vulkan_core.h"
+#include <stdint.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -43,8 +44,18 @@ typedef struct Magmatis {
   uint8_t framebuffer_resized;
   VmaAllocator vma_allocator;
   VkBuffer vertex_buffer;
+  VkBuffer index_buffer;
   uint32_t vertex_count;
+  uint32_t index_count;
   VmaAllocation vertex_allocation;
+  VmaAllocation index_allocation;
+  VmaAllocation *uniform_allocations;
+  VkDescriptorSetLayout *descriptor_set_layouts;
+  VkBuffer *uniform_buffers;
+  void *mapped_uniform_buffers;
+  uint32_t uniform_buffer_count;
+  VkDescriptorPool descriptor_pool;
+  VkDescriptorSet *descriptor_sets;
 } Magmatis;
 
 Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,

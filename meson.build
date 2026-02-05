@@ -22,6 +22,7 @@ vma_dep = dependency(
 sources = files(
   'lib/whereami.c',
   'src/common/list.c',
+  'src/core/buffer.c',
   'src/core/command.c',
   'src/core/device.c',
   'src/core/event.c',
@@ -35,6 +36,7 @@ sources = files(
   'src/core/render.c',
   'src/core/swapchain.c',
   'src/core/sync.c',
+  'src/core/uniform.c',
   'src/core/vertex.c',
   'src/core/vma.cpp',
   'src/core/window.c',

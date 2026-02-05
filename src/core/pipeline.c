@@ -83,9 +83,11 @@ VkRenderPass magmatis_render_pass_create(VkDevice device, VkFormat format) {
   return render_pass;
 }
 
-VkPipelineLayout magmatis_pipeline_layout_create(VkDevice device,
-                                                 VkExtent2D extent,
-                                                 PipelineInfo *pipeline_info) {
+VkPipelineLayout
+magmatis_pipeline_layout_create(VkDevice device, VkExtent2D extent,
+                                PipelineInfo *pipeline_info,
+                                VkDescriptorSetLayout descriptor_set_layouts,
+                                uint32_t descriptor_set_layouts_count) {
 
   size_t vertex_shader_size;
   size_t fragment_shader_size;
@@ -191,7 +193,8 @@ VkPipelineLayout magmatis_pipeline_layout_create(VkDevice device,
   pipeline_info->rasterization_state->polygonMode = VK_POLYGON_MODE_FILL;
   pipeline_info->rasterization_state->lineWidth = 1.0f;
   pipeline_info->rasterization_state->cullMode = VK_CULL_MODE_BACK_BIT;
-  pipeline_info->rasterization_state->frontFace = VK_FRONT_FACE_CLOCKWISE;
+  pipeline_info->rasterization_state->frontFace =
+      VK_FRONT_FACE_COUNTER_CLOCKWISE;
   pipeline_info->rasterization_state->depthBiasEnable = VK_FALSE;
   pipeline_info->rasterization_state->depthBiasConstantFactor = 0.0f;
   pipeline_info->rasterization_state->depthBiasClamp = 0.0f;
@@ -255,8 +258,8 @@ VkPipelineLayout magmatis_pipeline_layout_create(VkDevice device,
 
   pipeline_layout_create_info.sType =
       VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipeline_layout_create_info.setLayoutCount = 0;
-  pipeline_layout_create_info.pSetLayouts = NULL;
+  pipeline_layout_create_info.setLayoutCount = descriptor_set_layouts_count;
+  pipeline_layout_create_info.pSetLayouts = &descriptor_set_layouts;
   pipeline_layout_create_info.pushConstantRangeCount = 0;
   pipeline_layout_create_info.pPushConstantRanges = NULL;
 

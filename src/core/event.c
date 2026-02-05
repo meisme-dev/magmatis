@@ -2,6 +2,7 @@
 #include "command.h"
 #include "render.h"
 #include "swapchain.h"
+#include "uniform.h"
 #include <extra/colors.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,6 +42,9 @@ int magmatis_event_loop_run(Magmatis *program) {
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = signal_semaphores;
 
+  magmatis_uniform_buffer_update(
+      program->extent, program->mapped_uniform_buffers, program->current_frame);
+
   vkResetCommandBuffer(program->command_buffers[program->current_frame], 0);
   command_buffer_begin(program->command_buffers[program->current_frame]);
 
@@ -48,7 +52,9 @@ int magmatis_event_loop_run(Magmatis *program) {
          program->framebuffers[program->image_index], program->extent,
          program->pipeline, *program->pipeline_info->viewport_state->pViewports,
          *program->pipeline_info->viewport_state->pScissors,
-         program->vertex_buffer, program->vertex_count);
+         program->vertex_buffer, program->index_buffer,
+         program->descriptor_sets, program->index_count,
+         program->pipeline_layout, program->current_frame);
 
   command_buffer_end(program->command_buffers[program->current_frame]);
 
