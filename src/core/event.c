@@ -17,6 +17,19 @@ int magmatis_event_loop_run(Magmatis *program) {
                             program->image_semaphores[program->current_frame],
                             VK_NULL_HANDLE, &program->image_index);
 
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || program->framebuffer_resized) {
+    program->framebuffer_resized = false;
+    magmatis_swapchain_recreate(
+        &program->swapchain, program->physical_device, program->device,
+        &program->framebuffers, &program->image_views, program->surface,
+        program->render_pass, program->width, program->height, &program->images,
+        &program->image_count, &program->format, &program->extent);
+    return 0;
+  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    fprintf(stderr, "Failed to acquire next image\n");
+    return -1;
+  }
+
   vkResetFences(program->device, 1,
                 &program->in_flight_fences[program->current_frame]);
 
@@ -79,21 +92,9 @@ int magmatis_event_loop_run(Magmatis *program) {
 
   present_info.pImageIndices = &program->image_index;
 
+  vkQueueWaitIdle(program->present_queue);
   if (vkQueuePresentKHR(program->present_queue, &present_info) != VK_SUCCESS) {
     fprintf(stderr, "%sFailed to present image%s\n", RED, CLEAR);
-    return -1;
-  }
-
-  if (result == VK_ERROR_OUT_OF_DATE_KHR || program->framebuffer_resized) {
-    program->framebuffer_resized = false;
-    magmatis_swapchain_recreate(
-        &program->swapchain, program->physical_device, program->device,
-        &program->framebuffers, &program->image_views, program->surface,
-        program->render_pass, program->width, program->height, &program->images,
-        &program->image_count, &program->format, &program->extent);
-    return 0;
-  } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-    fprintf(stderr, "Failed to acquire next image\n");
     return -1;
   }
 
