@@ -71,7 +71,6 @@ int magmatis_event_loop_run(Magmatis *program) {
 
   command_buffer_end(program->command_buffers[program->current_frame]);
 
-  vkQueueWaitIdle(program->graphics_queue);
   if (vkQueueSubmit(program->graphics_queue, 1, &submit_info,
                     program->in_flight_fences[program->current_frame]) !=
       VK_SUCCESS) {
@@ -92,7 +91,6 @@ int magmatis_event_loop_run(Magmatis *program) {
 
   present_info.pImageIndices = &program->image_index;
 
-  vkQueueWaitIdle(program->present_queue);
   if (vkQueuePresentKHR(program->present_queue, &present_info) != VK_SUCCESS) {
     fprintf(stderr, "%sFailed to present image%s\n", RED, CLEAR);
     return -1;
