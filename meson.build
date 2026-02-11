@@ -36,6 +36,7 @@ sources = files(
   'src/core/render.c',
   'src/core/swapchain.c',
   'src/core/sync.c',
+  'src/core/texture.c',
   'src/core/uniform.c',
   'src/core/vertex.c',
   'src/core/vma.cpp',
@@ -64,6 +65,13 @@ foreach shader : shaders
 endforeach
 
 dependencies = [glfw_dep, vulkan_dep, cglm_dep, vma_dep]
+
+install_subdir(
+  'res',
+  install_dir: get_option('bindir'),
+  strip_directory: true,
+  exclude_files: shaders,
+)
 
 executable(
   'magmatis',

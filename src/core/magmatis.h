@@ -56,10 +56,15 @@ typedef struct Magmatis {
   uint32_t uniform_buffer_count;
   VkDescriptorPool descriptor_pool;
   VkDescriptorSet *descriptor_sets;
+  VkImage *textures;
+  uint32_t texture_count;
+  VkSampler texture_sampler;
+  VmaAllocation *texture_image_allocations;
+  VkImageView *texture_image_views;
 } Magmatis;
 
 Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
-                               int enable_validation);
+                               uint8_t enable_validation);
 int magmatis_program_cleanup(struct Magmatis *program);
 
 #ifndef USE_LONG_NAMES

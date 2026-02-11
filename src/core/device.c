@@ -136,6 +136,7 @@ VkDevice magmatis_device_create(VkSurfaceKHR surface,
   VkPhysicalDeviceFeatures device_features;
   memset(&device_features, 0, sizeof(device_features));
   vkGetPhysicalDeviceFeatures(physical_device, &device_features);
+  device_features.samplerAnisotropy = VK_TRUE;
 
   VkDeviceCreateInfo device_create_info;
   memset(&device_create_info, 0, sizeof(device_create_info));

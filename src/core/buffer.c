@@ -57,7 +57,13 @@ void magmatis_buffer_copy(VkDevice device, VkQueue queue,
   submit_info.commandBufferCount = 1;
   submit_info.pCommandBuffers = command_buffer;
 
-  vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+  if (vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS) {
+    fprintf(stderr, "%sFailed to submit queue%s\n", RED, CLEAR);
+    return;
+  }
+
+  vkQueueWaitIdle(queue);
+  vkFreeCommandBuffers(device, command_pool, 1, command_buffer);
 }
 
 VkBuffer magmatis_buffer_upload(VkDevice device, VkQueue queue,

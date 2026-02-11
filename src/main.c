@@ -7,7 +7,7 @@
 #include <string.h>
 
 static Magmatis *program = NULL;
-static int enable_validation = 0;
+static uint8_t enable_validation = 0;
 
 static void sigint_handler(int sig) {
   signal(sig, SIG_IGN);

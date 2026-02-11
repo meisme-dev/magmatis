@@ -14,22 +14,28 @@
 
 VkDescriptorSetLayout
 magmatis_uniform_descriptor_set_layout_create(VkDevice device) {
-  VkDescriptorSetLayoutBinding layout_binding;
-  memset(&layout_binding, 0, sizeof(VkDescriptorSetLayoutBinding));
+  VkDescriptorSetLayoutBinding layout_bindings[2];
+  memset(&layout_bindings, 0, sizeof(VkDescriptorSetLayoutBinding) * 2);
 
-  layout_binding.binding = 0;
-  layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  layout_binding.descriptorCount = 1;
-  layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  layout_binding.pImmutableSamplers = NULL;
+  layout_bindings[0].binding = 0;
+  layout_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  layout_bindings[0].descriptorCount = 1;
+  layout_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  layout_bindings[0].pImmutableSamplers = NULL;
+
+  layout_bindings[1].binding = 1;
+  layout_bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  layout_bindings[1].descriptorCount = 1;
+  layout_bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+  layout_bindings[1].pImmutableSamplers = NULL;
 
   VkDescriptorSetLayoutCreateInfo layout_create_info;
   memset(&layout_create_info, 0, sizeof(VkDescriptorSetLayoutCreateInfo));
 
   layout_create_info.sType =
       VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  layout_create_info.bindingCount = 1;
-  layout_create_info.pBindings = &layout_binding;
+  layout_create_info.bindingCount = 2;
+  layout_create_info.pBindings = layout_bindings;
 
   VkDescriptorSetLayout descriptor_set_layout;
   if (vkCreateDescriptorSetLayout(device, &layout_create_info, NULL,
@@ -102,16 +108,19 @@ void magmatis_uniform_buffer_update(VkExtent2D extent, void **mapped_buffers,
 VkDescriptorPool
 magmatis_uniform_buffer_descriptor_pool_create(VkDevice device,
                                                uint32_t count) {
-  VkDescriptorPoolSize pool_size;
-  memset(&pool_size, 0, sizeof(VkDescriptorPoolSize));
-  pool_size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  pool_size.descriptorCount = count;
+  VkDescriptorPoolSize pool_sizes[2];
+  memset(&pool_sizes, 0, sizeof(VkDescriptorPoolSize) * 2);
+  pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  pool_sizes[0].descriptorCount = count * 2;
+
+  pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  pool_sizes[1].descriptorCount = count * 2;
 
   VkDescriptorPoolCreateInfo pool_info;
   memset(&pool_info, 0, sizeof(VkDescriptorPoolCreateInfo));
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  pool_info.poolSizeCount = 1;
-  pool_info.pPoolSizes = &pool_size;
+  pool_info.poolSizeCount = 2;
+  pool_info.pPoolSizes = pool_sizes;
   pool_info.maxSets = count;
 
   VkDescriptorPool descriptor_pool;
@@ -126,7 +135,8 @@ magmatis_uniform_buffer_descriptor_pool_create(VkDevice device,
 
 VkDescriptorSet *magmatis_uniform_buffer_descriptor_set_create(
     VkDevice device, VkDescriptorPool pool, VkDescriptorSetLayout *layouts,
-    VkBuffer *uniform_buffers, uint32_t count, size_t size) {
+    VkBuffer *uniform_buffers, VkImageView image_view, VkSampler sampler,
+    uint32_t count, size_t size) {
   VkDescriptorSetAllocateInfo alloc_info;
   memset(&alloc_info, 0, sizeof(VkDescriptorSetAllocateInfo));
   alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -148,17 +158,32 @@ VkDescriptorSet *magmatis_uniform_buffer_descriptor_set_create(
     buffer_info.offset = 0;
     buffer_info.range = size;
 
-    VkWriteDescriptorSet write_descriptor_set;
-    memset(&write_descriptor_set, 0, sizeof(VkWriteDescriptorSet));
-    write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write_descriptor_set.dstSet = descriptor_sets[i];
-    write_descriptor_set.dstBinding = 0;
-    write_descriptor_set.dstArrayElement = 0;
-    write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    write_descriptor_set.descriptorCount = 1;
-    write_descriptor_set.pBufferInfo = &buffer_info;
+    VkDescriptorImageInfo image_info;
+    memset(&image_info, 0, sizeof(VkDescriptorImageInfo));
+    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    image_info.imageView = image_view;
+    image_info.sampler = sampler;
 
-    vkUpdateDescriptorSets(device, 1, &write_descriptor_set, 0, NULL);
+    VkWriteDescriptorSet write_descriptor_sets[2];
+    memset(&write_descriptor_sets, 0, sizeof(VkWriteDescriptorSet) * 2);
+    write_descriptor_sets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write_descriptor_sets[0].dstSet = descriptor_sets[i];
+    write_descriptor_sets[0].dstBinding = 0;
+    write_descriptor_sets[0].dstArrayElement = 0;
+    write_descriptor_sets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write_descriptor_sets[0].descriptorCount = 1;
+    write_descriptor_sets[0].pBufferInfo = &buffer_info;
+
+    write_descriptor_sets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write_descriptor_sets[1].dstSet = descriptor_sets[i];
+    write_descriptor_sets[1].dstBinding = 1;
+    write_descriptor_sets[1].dstArrayElement = 0;
+    write_descriptor_sets[1].descriptorType =
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write_descriptor_sets[1].descriptorCount = 1;
+    write_descriptor_sets[1].pImageInfo = &image_info;
+
+    vkUpdateDescriptorSets(device, 2, write_descriptor_sets, 0, NULL);
   }
 
   return descriptor_sets;

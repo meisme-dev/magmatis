@@ -152,7 +152,7 @@ magmatis_pipeline_layout_create(VkDevice device, VkExtent2D extent,
   pipeline_info->vertex_input_state->vertexBindingDescriptionCount = 1;
   pipeline_info->vertex_input_state->pVertexBindingDescriptions =
       vertex_input_binding_description;
-  pipeline_info->vertex_input_state->vertexAttributeDescriptionCount = 2;
+  pipeline_info->vertex_input_state->vertexAttributeDescriptionCount = 3;
   pipeline_info->vertex_input_state->pVertexAttributeDescriptions =
       vertex_input_attribute_description;
 

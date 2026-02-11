@@ -16,7 +16,7 @@ VkVertexInputBindingDescription *magmatis_vertex_binding_description_get(void) {
 VkVertexInputAttributeDescription *
 magmatis_vertex_attribute_description_get(void) {
   VkVertexInputAttributeDescription *attribute_description =
-      calloc(2, sizeof(VkVertexInputAttributeDescription));
+      calloc(3, sizeof(VkVertexInputAttributeDescription));
 
   attribute_description[0].binding = 0;
   attribute_description[0].location = 0;
@@ -27,6 +27,11 @@ magmatis_vertex_attribute_description_get(void) {
   attribute_description[1].location = 1;
   attribute_description[1].format = VK_FORMAT_R32G32B32_SFLOAT;
   attribute_description[1].offset = offsetof(Vertex, color);
+
+  attribute_description[2].binding = 0;
+  attribute_description[2].location = 2;
+  attribute_description[2].format = VK_FORMAT_R32G32_SFLOAT;
+  attribute_description[2].offset = offsetof(Vertex, tex_coord);
 
   return attribute_description;
 }

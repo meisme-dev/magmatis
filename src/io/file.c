@@ -17,17 +17,32 @@ static off_t file_size_get(char *filename) {
   }
 }
 
-char *magmatis_resource_file_read(char *filename, size_t *size) {
+char *magmatis_resource_file_path_get(const char *filename) {
+  char *path = magmatis_executable_directory_path_get();
+
+  strcat(path, filename);
+
+  return path;
+}
+
+char *magmatis_executable_directory_path_get() {
   int dirname_length = 0;
-  int length = wai_getExecutablePath(NULL, 0, NULL);
-  char *path = calloc(strlen(filename) + length + 2, sizeof(char));
+  int length = 0;
+
+  length = wai_getExecutablePath(NULL, 0, NULL);
+  char *path = calloc(length + 2, sizeof(char));
 
   wai_getExecutablePath(path, length, &dirname_length);
 
   path[dirname_length] = '\0';
 
   strcat(path, "/");
-  strcat(path, filename);
+
+  return path;
+}
+
+char *magmatis_resource_file_read(const char *filename, size_t *size) {
+  char *path = magmatis_resource_file_path_get(filename);
 
   FILE *file = fopen(path, "rb");
 

@@ -9,6 +9,7 @@
 #include "pipeline.h"
 #include "swapchain.h"
 #include "sync.h"
+#include "texture.h"
 #include "uniform.h"
 #include "vertex.h"
 #include "vulkan/vulkan_core.h"
@@ -41,6 +42,13 @@ int magmatis_program_cleanup(struct Magmatis *program) {
   vmaDestroyBuffer(program->vma_allocator, program->index_buffer,
                    program->index_allocation);
 
+  for (uint32_t i = 0; i < program->texture_count; i++) {
+    vkDestroyImage(program->device, program->textures[i], NULL);
+    vkDestroyImageView(program->device, program->texture_image_views[i], NULL);
+    vmaFreeMemory(program->vma_allocator,
+                  program->texture_image_allocations[i]);
+  }
+
   vmaDestroyAllocator(program->vma_allocator);
 
   vkDestroyDescriptorPool(program->device, program->descriptor_pool, NULL);
@@ -55,6 +63,8 @@ int magmatis_program_cleanup(struct Magmatis *program) {
     vkDestroyImageView(program->device, program->image_views[i], NULL);
   }
 
+  vkDestroySampler(program->device, program->texture_sampler, NULL);
+
   vkDestroySwapchainKHR(program->device, program->swapchain, NULL);
   vkDestroyDevice(program->device, NULL);
   vkDestroySurfaceKHR(program->instance, program->surface, NULL);
@@ -67,7 +77,7 @@ int magmatis_program_cleanup(struct Magmatis *program) {
 }
 
 Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
-                               int enable_validation) {
+                               uint8_t enable_validation) {
   Magmatis *program = (Magmatis *)calloc(1, sizeof(Magmatis));
 
   int hints[] = {GLFW_CLIENT_API, GLFW_RESIZABLE};
@@ -169,13 +179,10 @@ Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
   uint32_t vertex_count = 4;
 
   Vertex *vertices = calloc(vertex_count, sizeof(Vertex));
-  vertices[0] =
-      (Vertex){.position = {-0.5f, -0.5f}, .color = {1.0f, 0.0f, 0.0f}};
-  vertices[1] =
-      (Vertex){.position = {0.5f, -0.5f}, .color = {0.0f, 1.0f, 0.0f}};
-  vertices[2] = (Vertex){.position = {0.5f, 0.5f}, .color = {0.0f, 0.0f, 1.0f}};
-  vertices[3] =
-      (Vertex){.position = {-0.5f, 0.5f}, .color = {1.0f, 1.0f, 1.0f}};
+  vertices[0] = (Vertex){{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}};
+  vertices[1] = (Vertex){{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}};
+  vertices[2] = (Vertex){{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}};
+  vertices[3] = (Vertex){{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}};
 
   uint32_t index_count = 6;
   uint16_t *indices = calloc(index_count, sizeof(uint16_t));
@@ -185,6 +192,20 @@ Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
   indices[3] = 2;
   indices[4] = 3;
   indices[5] = 0;
+
+  VmaAllocation *texture_image_allocation = calloc(1, sizeof(VmaAllocation));
+
+  VkImage *texture_image = calloc(1, sizeof(VkImage));
+  *texture_image = magmatis_texture_create(
+      vma_allocator, texture_image_allocation, graphics_queue, command_pool,
+      device, "texture.jpg");
+
+  VkSampler texture_sampler =
+      magmatis_texture_sampler_create(physical_device, device);
+
+  VkImageView *texture_image_view = calloc(1, sizeof(VkImageView));
+  texture_image_view = magmatis_image_view_create(device, texture_image,
+                                                  VK_FORMAT_R8G8B8A8_SRGB, 1);
 
   VmaAllocation vertex_allocation;
 
@@ -215,7 +236,8 @@ Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
   VkDescriptorSet *descriptor_sets =
       magmatis_uniform_buffer_descriptor_set_create(
           device, descriptor_pool, descriptor_set_layouts, uniform_buffers,
-          uniform_buffer_count, sizeof(UniformBufferObject));
+          *texture_image_view, texture_sampler, uniform_buffer_count,
+          sizeof(UniformBufferObject));
 
   magmatis_sync_create(device, image_semaphores, render_semaphores,
                        in_flight_fences, MAX_FRAMES_IN_FLIGHT);
@@ -262,6 +284,11 @@ Magmatis *magmatis_program_new(unsigned int w, unsigned int h, char *title,
   program->descriptor_pool = descriptor_pool;
   program->descriptor_sets = descriptor_sets;
   program->uniform_allocations = uniform_allocations;
+  program->textures = texture_image;
+  program->texture_count = 1;
+  program->texture_sampler = texture_sampler;
+  program->texture_image_allocations = texture_image_allocation;
+  program->texture_image_views = texture_image_view;
 
   return program;
 }

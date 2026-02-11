@@ -27,7 +27,8 @@ VkDescriptorPool magmatis_uniform_buffer_descriptor_pool_create(VkDevice device,
 
 VkDescriptorSet *magmatis_uniform_buffer_descriptor_set_create(
     VkDevice device, VkDescriptorPool pool, VkDescriptorSetLayout *layouts,
-    VkBuffer *uniform_buffers, uint32_t count, size_t size);
+    VkBuffer *uniform_buffers, VkImageView image_view, VkSampler sampler,
+    uint32_t count, size_t size);
 
 #ifndef USE_LONG_NAMES
 #define uniform_descriptor_set_layout_create                                   \
